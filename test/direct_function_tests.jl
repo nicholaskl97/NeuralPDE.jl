@@ -55,7 +55,7 @@ println("Approximation of function 1D 2")
 @parameters x
 @variables u(..)
 func(x) = @. cos(5pi * x) * x
-eq = [u(x) ~ func(x)]
+eq = [u(x) - u(0) ~ func(x)]
 bc = [u(0) ~ u(0)]
 
 x0 = 0
@@ -82,8 +82,8 @@ res = Optimization.solve(prob, OptimizationOptimJL.BFGS(), maxiters = 1000)
 dx = 0.01
 xs = collect(x0:dx:x_end)
 func_s = func(xs)
-
-@test discretization.phi(xs', res.u)≈func(xs') rtol=0.01
+func_approx(x) = discretization.phi(x, res.u) .- discretization.phi(0., res.u)
+@test func_approx(xs')≈func(xs') rtol=0.01
 
 # plot(xs,func(xs))
 # plot!(xs, discretization.phi(xs',res.u)')
