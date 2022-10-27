@@ -131,7 +131,7 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
                 indvars = _args[2:end]
                 var_ = is_integral ? :(u) : :($(Expr(:$, :u)))
                 ex.args = if !multioutput
-                    [var_, Symbol(:cord, num_depvar), :($θ), :phi]
+                    [var_, Symbol(:cord, num_depvar), :($θ), :phi] #TODO: this should somehow use indvars
                 else
                     [
                         var_,
@@ -439,8 +439,9 @@ function get_argument(eqs, dict_indvars, dict_depvars)
     vars = map(exprs) do expr
         _vars = map(depvar -> find_thing_in_expr(expr, depvar), collect(keys(dict_depvars)))
         f_vars = filter(x -> !isempty(x), _vars)
-        map(x -> first(x), f_vars)
+        #map(x -> first(x), f_vars)
     end
+    vars = [depvar for expr in vars for depvar in expr ]
     args_ = map(vars) do _vars
         ind_args_ = map(var -> var.args[2:end], _vars)
         syms = Set{Symbol}()
