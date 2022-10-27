@@ -513,7 +513,7 @@ function SciMLBase.symbolic_discretize(pde_system::PDESystem,
         eqs = [eqs]
     end
 
-    pde_indvars = if strategy isa QuadratureTraining
+    pde_indvars = if true# strategy isa QuadratureTraining
         get_argument(eqs, dict_indvars, dict_depvars)
     else
         get_variables(eqs, dict_indvars, dict_depvars)
