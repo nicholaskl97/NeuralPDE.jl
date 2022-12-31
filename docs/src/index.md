@@ -14,9 +14,9 @@ partial differential equations using physics-informed neural networks (PINNs).
 - Integrated logging suite for handling connections to TensorBoard
 - Handling of (partial) integro-differential equations and various stochastic equations
 - Specialized forms for solving `ODEProblem`s with neural networks
-- Compatability with [Flux.jl](https://github.com/FluxML/Flux.jl) and [Lux.jl](https://github.com/avik-pal/Lux.jl)
+- Compatability with [Flux.jl](https://docs.sciml.ai/Flux.jl/stable/) and [Lux.jl](https://docs.sciml.ai/Lux/stable/)
   for all of the GPU-powered machine learning layers available from those libraries.
-- Compatability with [NeuralOperators.jl](https://github.com/SciML/NeuralOperators.jl) for
+- Compatability with [NeuralOperators.jl](https://docs.sciml.ai/NeuralOperators/stable/) for
   mixing DeepONets and other neural operators (Fourier Neural Operators, Graph Neural Operators,
   etc.) with physics-informed loss functions
 
@@ -59,4 +59,59 @@ If you use NeuralPDE.jl in your research, please cite [this paper](https://arxiv
   year = {2021},
   copyright = {Creative Commons Attribution Non Commercial Share Alike 4.0 International}
 }
+```
+
+## Reproducibility
+```@raw html
+<details><summary>The documentation of this SciML package was built using these direct dependencies,</summary>
+```
+```@example
+using Pkg # hide
+Pkg.status() # hide
+```
+```@raw html
+</details>
+```
+```@raw html
+<details><summary>and using this machine and Julia version.</summary>
+```
+```@example
+using InteractiveUtils # hide
+versioninfo() # hide
+```
+```@raw html
+</details>
+```
+```@raw html
+<details><summary>A more complete overview of all dependencies and their versions is also provided.</summary>
+```
+```@example
+using Pkg # hide
+Pkg.status(;mode = PKGMODE_MANIFEST) # hide
+```
+```@raw html
+</details>
+```
+```@raw html
+You can also download the 
+<a href="
+```
+```@eval
+using TOML
+version = TOML.parse(read("../../Project.toml",String))["version"]
+name = TOML.parse(read("../../Project.toml",String))["name"]
+link = "https://github.com/SciML/"*name*".jl/tree/gh-pages/v"*version*"/assets/Manifest.toml"
+```
+```@raw html
+">manifest</a> file and the
+<a href="
+```
+```@eval
+using TOML
+version = TOML.parse(read("../../Project.toml",String))["version"]
+name = TOML.parse(read("../../Project.toml",String))["name"]
+link = "https://github.com/SciML/"*name*".jl/tree/gh-pages/v"*version*"/assets/Project.toml"
+```
+```@raw html
+">project</a> file.
 ```

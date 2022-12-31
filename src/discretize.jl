@@ -323,23 +323,22 @@ function get_bounds(domains, eqs, bcs, eltypeθ, dict_indvars, dict_depvars, str
                           infimum(d.domain) + dx,
                           supremum(d.domain) - dx,
                       ] for d in domains])
+
     # pde_bounds = [[infimum(d.domain),supremum(d.domain)] for d in domains]
     pde_args = get_argument(eqs, dict_indvars, dict_depvars)
-
-    pde_bounds = map(pde_args) do pd
-        span = map(p -> get(dict_span, p, p), pd)
-        map(s -> adapt(eltypeθ, s), span)
+    pde_bounds = map(pde_args) do pde_arg
+        bds = mapreduce(s -> get(dict_span, s, fill(s, 2)), hcat, pde_arg)
+        bds = eltypeθ.(bds)
+        bds[1, :], bds[2, :]
     end
 
     bound_args = get_argument(bcs, dict_indvars, dict_depvars)
-    dict_span = Dict([Symbol(d.variables) => [infimum(d.domain), supremum(d.domain)]
-                      for d in domains])
-
-    bcs_bounds = map(bound_args) do bt
-        span = map(b -> get(dict_span, b, b), bt)
-        map(s -> adapt(eltypeθ, s), span)
+    bcs_bounds = map(bound_args) do bound_arg
+        bds = mapreduce(s -> get(dict_span, s, fill(s, 2)), hcat, bound_arg)
+        bds = eltypeθ.(bds)
+        bds[1, :], bds[2, :]
     end
-    [pde_bounds, bcs_bounds]
+    return pde_bounds, bcs_bounds
 end
 
 function get_numeric_integral(pinnrep::PINNRepresentation)
@@ -396,7 +395,7 @@ prob = symbolic_discretize(pde_system::PDESystem, discretization::PhysicsInforme
 `symbolic_discretize` is the lower level interface to `discretize` for inspecting internals.
 It transforms a symbolic description of a ModelingToolkit-defined `PDESystem` into a
 `PINNRepresentation` which holds the pieces required to build an `OptimizationProblem`
-for [Optimization.jl](https://Optimization.sciml.ai/dev/) whose solution is the solution
+for [Optimization.jl](https://docs.sciml.ai/Optimization/stable) whose solution is the solution
 to the PDE.
 
 For more information, see `discretize` and `PINNRepresentation`.
@@ -495,10 +494,12 @@ function SciMLBase.symbolic_discretize(pde_system::PDESystem,
 
     if (phi isa Vector && phi[1].f isa Lux.AbstractExplicitLayer)
         for ϕ in phi
-            ϕ.st = adapt(typeof(flat_init_params), ϕ.st)
+            ϕ.st = adapt(parameterless_type(ComponentArrays.getdata(flat_init_params)),
+                         ϕ.st)
         end
     elseif (!(phi isa Vector) && phi.f isa Lux.AbstractExplicitLayer)
-        phi.st = adapt(typeof(flat_init_params), phi.st)
+        phi.st = adapt(parameterless_type(ComponentArrays.getdata(flat_init_params)),
+                       phi.st)
     end
 
     derivative = discretization.derivative
@@ -671,7 +672,7 @@ prob = discretize(pde_system::PDESystem, discretization::PhysicsInformedNN)
 ```
 
 Transforms a symbolic description of a ModelingToolkit-defined `PDESystem` and generates
-an `OptimizationProblem` for [Optimization.jl](https://Optimization.sciml.ai/dev/) whose
+an `OptimizationProblem` for [Optimization.jl](https://docs.sciml.ai/Optimization/stable/) whose
 solution is the solution to the PDE.
 """
 function SciMLBase.discretize(pde_system::PDESystem, discretization::PhysicsInformedNN)
