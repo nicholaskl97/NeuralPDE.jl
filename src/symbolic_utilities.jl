@@ -19,10 +19,15 @@ julia> _dot_(e)
 dottable_(x) = Broadcast.dottable(x)
 dottable_(x::Function) = true
 
+_vcat(x) = vcat(x)
+dottable_(x::typeof(_vcat)) = false
+
 _dot_(x) = x
 function _dot_(x::Expr)
     dotargs = Base.mapany(_dot_, x.args)
-    if x.head === :call && dottable_(x.args[1])
+    if x.head === :call && x.args[1] === :_vcat
+        Expr(x.head, dotargs...)
+    elseif x.head === :call && dottable_(x.args[1])
         Expr(:., dotargs[1], Expr(:tuple, dotargs[2:end]...))
     elseif x.head === :comparison
         Expr(:comparison,
@@ -129,9 +134,12 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
                 depvar = _args[1]
                 num_depvar = dict_depvars[depvar]
                 indvars = _args[2:end]
+                for i in eachindex(indvars)
+                    indvars[i] = transform_expression(pinnrep, indvars[i])
+                end
                 var_ = is_integral ? :(u) : :($(Expr(:$, :u)))
                 ex.args = if !multioutput
-                    [var_, Symbol(:cord, num_depvar), :($θ), :phi] #TODO: this should somehow use indvars
+                    [var_, :( (_vcat)($(indvars...)) ), :($θ), :phi] 
                 else
                     [
                         var_,
