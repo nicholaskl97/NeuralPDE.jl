@@ -19,7 +19,7 @@ julia> _dot_(e)
 dottable_(x) = Broadcast.dottable(x)
 dottable_(x::Function) = true
 
-_vcat(x) = vcat(x)
+_vcat(x...) = vcat(x...)
 dottable_(x::typeof(_vcat)) = false
 
 _dot_(x) = x
