@@ -292,7 +292,7 @@ function get_bounds(domains, eqs, bcs, eltypeθ, dict_indvars, dict_depvars,
     dict_lower_bound = Dict([Symbol(d.variables) => infimum(d.domain) for d in domains])
     dict_upper_bound = Dict([Symbol(d.variables) => supremum(d.domain) for d in domains])
 
-    pde_args = get_argument(eqs, dict_indvars, dict_depvars)
+    pde_args = get_variables(eqs, dict_indvars, dict_depvars)
 
     pde_lower_bounds = map(pde_args) do pd
         span = map(p -> get(dict_lower_bound, p, p), pd)
