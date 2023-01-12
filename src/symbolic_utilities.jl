@@ -143,7 +143,7 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
                 else
                     [
                         var_,
-                        Symbol(:cord, num_depvar),
+                        :( (_vcat)($(indvars...)) ),
                         Symbol(:($θ), num_depvar),
                         Symbol(:phi, num_depvar),
                     ]
@@ -443,27 +443,48 @@ function get_argument(eqs, _indvars::Array, _depvars::Array)
     get_argument(eqs, dict_indvars, dict_depvars)
 end
 function get_argument(eqs, dict_indvars, dict_depvars)
+    """Equations, as expressions"""
     exprs = toexpr.(eqs)
-    vars = map(exprs) do expr
+    """Instances of each dependent variable that appears in the expression, by dependent variable, by equation"""
+    vars = map(exprs) do expr # For each equation,...
+        """Arrays of instances of each dependent variable, by dependent variable"""
         _vars = map(depvar -> find_thing_in_expr(expr, depvar), collect(keys(dict_depvars)))
+        """Arrays of instances of each dependent variable that appears in the expression, by dependent variable"""
         f_vars = filter(x -> !isempty(x), _vars)
-        map(x -> first(x), f_vars)
     end
+#    vars = [depvar for expr in vars for depvar in expr ]
     args_ = map(vars) do _vars
-        ind_args_ = map(var -> var.args[2:end], _vars)
+        """Arguments of all instances of dependent variable, by instance, by dependent variable"""
+        ind_args_ = map.(var -> var.args[2:end], _vars)
         syms = Set{Symbol}()
-        filter(vcat(ind_args_...)) do ind_arg
+        """All arguments in any instance of a dependent variable"""
+        all_ind_args = vcat((ind_args_...)...)
+
+        # Add any independent variables from expression dependent variable calls
+        for ind_arg in all_ind_args 
+            if ind_arg isa Expr 
+                for ind_var in collect(keys(dict_indvars))
+                    if !isempty(NeuralPDE.find_thing_in_expr(ind_arg, ind_var))
+                        push!(all_ind_args, ind_var)
+                    end
+                end
+            end
+        end
+
+        filter(all_ind_args) do ind_arg # For each argument
             if ind_arg isa Symbol
                 if ind_arg ∈ syms
-                    false
+                    false # remove symbols that have already occurred
                 else
                     push!(syms, ind_arg)
-                    true
+                    true # keep symbols that haven't occurred yet, but note their occurance
                 end
+            elseif ind_arg isa Expr # we've already taken what we wanted from the expressions
+                false
             else
-                true
+                true # keep all non-symbols
             end
         end
     end
-    return args_ # TODO for all arguments
+    return args_ 
 end
