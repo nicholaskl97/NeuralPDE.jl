@@ -256,7 +256,7 @@ function generate_training_sets(domains, dx, eqs, bcs, eltypeθ, dict_indvars::D
                           hcat(vec(map(points -> collect(points),
                                        Iterators.product(bc_data...)))...))
 
-    pde_train_sets = map(pde_args) do bt
+    pde_train_sets = map(pde_vars) do bt
         span = map(b -> get(dict_var_span_, b, b), bt)
         _set = adapt(eltypeθ,
                      hcat(vec(map(points -> collect(points), Iterators.product(span...)))...))
