@@ -1,4 +1,5 @@
 using Base.Broadcast
+using LinearAlgebra
 
 """
 Override `Broadcast.__dot__` with `Broadcast.dottable(x::Function) = true`
@@ -19,6 +20,16 @@ julia> _dot_(e)
 dottable_(x) = Broadcast.dottable(x)
 dottable_(x::Function) = true
 
+_vcat(x::Number...) = vcat(x...)
+_vcat(x::(LinearAlgebra._DenseConcatGroup.b)...) = vcat(x...)
+# If the arguments are a mix of numbers and matrices/vectors/arrays, 
+# the numbers need to be copied for the dimensions to match
+function _vcat(x::LinearAlgebra._DenseConcatGroup...) 
+    example = first(Iterators.filter(e -> !(e isa Number), x))
+    dims = (1, size(example)[2:end]...)
+    x = map( el -> el isa Number ? fill(el, dims) : el , x)
+    _vcat(x...)
+end
 _vcat(x...) = vcat(x...)
 dottable_(x::typeof(_vcat)) = false
 
@@ -133,10 +144,7 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
             if e in keys(dict_depvars)
                 depvar = _args[1]
                 num_depvar = dict_depvars[depvar]
-                indvars = _args[2:end]
-                for i in eachindex(indvars)
-                    indvars[i] = transform_expression(pinnrep, indvars[i])
-                end
+                indvars = map( (indvar_) -> transform_expression(pinnrep, indvar_), _args[2:end])
                 var_ = is_integral ? :(u) : :($(Expr(:$, :u)))
                 ex.args = if !multioutput
                     [var_, :( (_vcat)($(indvars...)) ), :($θ), :phi] 
