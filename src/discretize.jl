@@ -142,17 +142,10 @@ function build_symbolic_loss_function(pinnrep::PINNRepresentation, eqs;
     vcat_expr = Expr(:block, :($(eq_pair_expr...)))
     vcat_expr_loss_functions = Expr(:block, vcat_expr, loss_function) # TODO rename
 
-    if strategy isa QuadratureTraining
-        indvars_ex = get_indvars_ex(bc_indvars)
-        left_arg_pairs, right_arg_pairs = this_eq_indvars, indvars_ex
-        vars_eq = Expr(:(=), build_expr(:tuple, left_arg_pairs),
-                       build_expr(:tuple, right_arg_pairs))
-    else
-        indvars_ex = [:($:cord[[$i], :]) for (i, x) in enumerate(this_eq_indvars)]
-        left_arg_pairs, right_arg_pairs = this_eq_indvars, indvars_ex
-        vars_eq = Expr(:(=), build_expr(:tuple, left_arg_pairs),
-                       build_expr(:tuple, right_arg_pairs))
-    end
+    indvars_ex = [:($:cord[[$i], :]) for (i, x) in enumerate(this_eq_indvars)]
+    left_arg_pairs, right_arg_pairs = this_eq_indvars, indvars_ex
+    vars_eq = Expr(:(=), build_expr(:tuple, left_arg_pairs),
+                    build_expr(:tuple, right_arg_pairs))
 
     if !(dict_transformation_vars isa Nothing)
         transformation_expr_ = Expr[]

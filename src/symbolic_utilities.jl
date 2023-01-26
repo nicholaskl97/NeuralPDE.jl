@@ -167,7 +167,7 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
                 end
                 depvar = _args[1]
                 num_depvar = dict_depvars[depvar]
-                indvars = _args[2:end]
+                indvars = map( (indvar_) -> transform_expression(pinnrep, indvar_), _args[2:end])
                 dict_interior_indvars = Dict([indvar .=> j
                                               for (j, indvar) in enumerate(dict_depvar_input[depvar])])
                 dim_l = length(dict_interior_indvars)
@@ -178,13 +178,13 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
                 εs_dnv = [εs[d] for d in undv]
 
                 ex.args = if !multioutput
-                    [var_, :phi, :u, Symbol(:cord, num_depvar), εs_dnv, order, :($θ)]
+                    [var_, :phi, :u, :( (_vcat)($(indvars...)) ), εs_dnv, order, :($θ)]
                 else
                     [
                         var_,
                         Symbol(:phi, num_depvar),
                         :u,
-                        Symbol(:cord, num_depvar),
+                        :( (_vcat)($(indvars...)) ),
                         εs_dnv,
                         order,
                         Symbol(:($θ), num_depvar),
@@ -352,7 +352,7 @@ function pair(eq, depvars, dict_depvars, dict_depvar_input)
     expr = toexpr(eq)
     pair_ = map(depvars) do depvar
         if !isempty(find_thing_in_expr(expr, depvar))
-            dict_depvars[depvar] => dict_depvar_input[depvar]
+            dict_depvars[depvar] => filter(arg -> !isempty(find_thing_in_expr(expr, arg)), dict_depvar_input[depvar])
         end
     end
     Dict(filter(p -> p !== nothing, pair_))
