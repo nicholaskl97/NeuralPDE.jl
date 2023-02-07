@@ -21,13 +21,13 @@ dottable_(x) = Broadcast.dottable(x)
 dottable_(x::Function) = true
 
 _vcat(x::Number...) = vcat(x...)
-_vcat(x::(LinearAlgebra._DenseConcatGroup.b)...) = vcat(x...)
+_vcat(x::AbstractArray{<:Number}...) = vcat(x...)
 # If the arguments are a mix of numbers and matrices/vectors/arrays, 
 # the numbers need to be copied for the dimensions to match
-function _vcat(x::LinearAlgebra._DenseConcatGroup...) 
+function _vcat(x::Union{Number, AbstractArray{<:Number}}...) 
     example = first(Iterators.filter(e -> !(e isa Number), x))
     dims = (1, size(example)[2:end]...)
-    x = map( el -> el isa Number ? fill(el, dims) : el , x)
+    x = map( el -> el isa Number ? (typeof(example))(fill(el, dims)) : el , x) 
     _vcat(x...)
 end
 _vcat(x...) = vcat(x...)
