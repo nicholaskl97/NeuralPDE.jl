@@ -88,18 +88,17 @@ function merge_strategy_with_loss_function(pinnrep::PINNRepresentation,
                         strategy)
     pde_bounds, bcs_bounds = bounds
 
-    pde_loss_functions = [get_loss_function(_loss, bound, eltypeθ, strategy)
+    pde_loss_functions = [get_loss_function(_loss, bound, eltypeθ, strategy, strategy.points)
                           for (_loss, bound) in zip(datafree_pde_loss_function, pde_bounds)]
 
-    bc_loss_functions = [get_loss_function(_loss, bound, eltypeθ, strategy)
+    bc_loss_functions = [get_loss_function(_loss, bound, eltypeθ, strategy, strategy.bcs_points)
                          for (_loss, bound) in zip(datafree_bc_loss_function, bcs_bounds)]
 
     pde_loss_functions, bc_loss_functions
 end
 
-function get_loss_function(loss_function, bound, eltypeθ, strategy::StochasticTraining;
+function get_loss_function(loss_function, bound, eltypeθ, strategy::StochasticTraining, points = strategy.points;
                            τ = nothing)
-    points = strategy.points
 
     loss = (θ) -> begin
         sets = generate_random_points(points, bound, eltypeθ)
