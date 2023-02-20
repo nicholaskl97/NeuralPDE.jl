@@ -320,9 +320,13 @@ function get_bounds(domains, eqs, bcs, eltypeθ, dict_indvars, dict_depvars, str
     # pde_bounds = [[infimum(d.domain),supremum(d.domain)] for d in domains]
     pde_vars = get_variables(eqs, dict_indvars, dict_depvars)
     pde_bounds = map(pde_vars) do pde_var
-        bds = mapreduce(s -> get(dict_span, s, fill(s, 2)), hcat, pde_var)
-        bds = eltypeθ.(bds)
-        bds[1, :], bds[2, :]
+        if !isempty(pde_var)
+            bds = mapreduce(s -> get(dict_span, s, fill(s, 2)), hcat, pde_var)
+            bds = eltypeθ.(bds)
+            bds[1, :], bds[2, :]
+        else
+            [eltypeθ(0.)], [eltypeθ(0.)]
+        end
     end
 
     dx_bcs = 1 / strategy.bcs_points
@@ -332,10 +336,15 @@ function get_bounds(domains, eqs, bcs, eltypeθ, dict_indvars, dict_depvars, str
                       ] for d in domains])
     bound_vars = get_variables(bcs, dict_indvars, dict_depvars)
     bcs_bounds = map(bound_vars) do bound_var
-        bds = mapreduce(s -> get(dict_span_bcs, s, fill(s, 2)), hcat, bound_var)
-        bds = eltypeθ.(bds)
-        bds[1, :], bds[2, :]
+        if !isempty(bound_var)
+            bds = mapreduce(s -> get(dict_span_bcs, s, fill(s, 2)), hcat, bound_var)
+            bds = eltypeθ.(bds)
+            bds[1, :], bds[2, :]
+        else
+            [eltypeθ(0.)], [eltypeθ(0.)]
+        end
     end
+    
     return pde_bounds, bcs_bounds
 end
 
