@@ -1,5 +1,4 @@
 using Base.Broadcast
-using LinearAlgebra
 
 """
 Override `Broadcast.__dot__` with `Broadcast.dottable(x::Function) = true`
