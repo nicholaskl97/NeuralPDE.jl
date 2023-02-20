@@ -351,7 +351,7 @@ domains = [x ∈ Interval(0.0, 1.0)]
 chain = [[Lux.Chain(Lux.Dense(1, 12, Lux.tanh), Lux.Dense(12, 12, Lux.tanh),
                     Lux.Dense(12, 1)) for _ in 1:3]
          [Lux.Chain(Lux.Dense(1, 4, Lux.tanh), Lux.Dense(4, 1)) for _ in 1:2]]
-quasirandom_strategy = NeuralPDE.QuasiRandomTraining(100; #points
+quasirandom_strategy = NeuralPDE.QuasiRandomTraining(130; #points
                                                      sampling_alg = LatinHypercubeSample())
 
 discretization = NeuralPDE.PhysicsInformedNN(chain, quasirandom_strategy)
