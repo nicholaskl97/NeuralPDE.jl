@@ -434,6 +434,13 @@ function find_thing_in_expr(ex::Expr, thing; ans = [])
     return collect(Set(ans))
 end
 
+function find_thing_in_expr(ex::Symbol, thing::Symbol; ans = [])
+    if thing == ex
+        push!(ans, ex)
+    end
+    return ans
+end
+
 """
 ```julia
 get_argument(eqs,_indvars::Array,_depvars::Array)

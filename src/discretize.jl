@@ -61,7 +61,7 @@ function build_symbolic_loss_function(pinnrep::PINNRepresentation, eqs;
         this_eq_pair = pair(eqs, depvars, dict_depvars, dict_depvar_input)
         this_eq_indvars = unique(vcat(values(this_eq_pair)...))
     else
-        this_eq_pair = Dict(map(intvars -> dict_depvars[intvars] => dict_depvar_input[intvars],
+        this_eq_pair = Dict(map(intvars -> dict_depvars[intvars] => filter(arg -> !isempty(find_thing_in_expr(integrand, arg)), dict_depvar_input[intvars]),
                                 integrating_depvars))
         this_eq_indvars = transformation_vars isa Nothing ?
                           unique(vcat(values(this_eq_pair)...)) : transformation_vars
