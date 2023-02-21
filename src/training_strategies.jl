@@ -16,6 +16,8 @@ struct GridTraining{T} <: AbstractTrainingStrategy
     dx::T
 end
 
+import ComponentArrays
+
 function merge_strategy_with_loss_function(pinnrep::PINNRepresentation,
                                            strategy::GridTraining,
                                            datafree_pde_loss_function,
