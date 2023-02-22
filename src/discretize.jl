@@ -1,5 +1,3 @@
-import ComponentArrays
-
 """
 Build a loss function for a PDE or a boundary condition
 

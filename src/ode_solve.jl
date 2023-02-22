@@ -1,7 +1,5 @@
 abstract type NeuralPDEAlgorithm <: DiffEqBase.AbstractODEAlgorithm end
 
-import ComponentArrays
-
 """
 ```julia
 NNODE(chain, opt=OptimizationPolyalgorithms.PolyOpt(), init_params = nothing;
