@@ -83,7 +83,7 @@ res = Optimization.solve(prob, OptimizationOptimJL.BFGS(), maxiters = 1000)
 dx = 0.01
 xs = collect(x0:dx:x_end)
 func_s = func(xs)
-func_approx(x) = discretization.phi(x, res.u) .- discretization.phi(0., res.u)
+func_approx(x) = discretization.phi(x, res.u) .- discretization.phi(0.0, res.u)
 @test func_approx(xs')≈func(xs') rtol=0.01
 
 # plot(xs,func(xs))
@@ -94,11 +94,11 @@ println("Approximation of implicit function 1D")
 
 @parameters x
 @variables u(..)
-eq = [u(sin(x)) ~ cos(x) + cos(2*x)]
+eq = [u(sin(x)) ~ cos(x) + cos(2 * x)]
 bc = [u(0) ~ u(0)]
 
-x0 = pi/2
-x_end = 3*pi/2
+x0 = pi / 2
+x_end = 3 * pi / 2
 domain = [x ∈ Interval(x0, x_end)]
 
 hidden = 20
@@ -188,7 +188,7 @@ println("Approximation of function 2D 2")
 @parameters x, y
 @variables u(..)
 func(x, y) = -sin(x) * sin(y) * exp(-((x - pi)^2 + (y - pi)^2))
-eq = [u(x, y) - u(0,0) ~ func(x, y)]
+eq = [u(x, y) - u(0, 0) ~ func(x, y)]
 bc = [u(0, 0) ~ u(0, 0)]
 
 x0 = -10
@@ -222,9 +222,11 @@ phi = discretization.phi
 xs = collect(x0:0.1:x_end)
 ys = collect(y0:0.1:y_end)
 
-func_approx(x,y) = first(phi([x,y], res.minimizer)) .- first(phi([0.,0.], res.minimizer))
+function func_approx(x, y)
+    first(phi([x, y], res.minimizer)) .- first(phi([0.0, 0.0], res.minimizer))
+end
 u_predict = reshape([func_approx(x, y) for x in xs for y in ys], (length(xs), length(ys)))
-u_real    = reshape([       func(x, y) for x in xs for y in ys], (length(xs), length(ys)))
+u_real = reshape([func(x, y) for x in xs for y in ys], (length(xs), length(ys)))
 diff_u = abs.(u_predict .- u_real)
 
 @test u_predict≈u_real rtol=0.05

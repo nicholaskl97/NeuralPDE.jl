@@ -23,10 +23,10 @@ _vcat(x::Number...) = vcat(x...)
 _vcat(x::AbstractArray{<:Number}...) = vcat(x...)
 # If the arguments are a mix of numbers and matrices/vectors/arrays, 
 # the numbers need to be copied for the dimensions to match
-function _vcat(x::Union{Number, AbstractArray{<:Number}}...) 
+function _vcat(x::Union{Number, AbstractArray{<:Number}}...)
     example = first(Iterators.filter(e -> !(e isa Number), x))
     dims = (1, size(example)[2:end]...)
-    x = map( el -> el isa Number ? (typeof(example))(fill(el, dims)) : el , x) 
+    x = map(el -> el isa Number ? (typeof(example))(fill(el, dims)) : el, x)
     _vcat(x...)
 end
 _vcat(x...) = vcat(x...)
@@ -143,14 +143,15 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
             if e in keys(dict_depvars)
                 depvar = _args[1]
                 num_depvar = dict_depvars[depvar]
-                indvars = map( (indvar_) -> transform_expression(pinnrep, indvar_), _args[2:end])
+                indvars = map((indvar_) -> transform_expression(pinnrep, indvar_),
+                              _args[2:end])
                 var_ = is_integral ? :(u) : :($(Expr(:$, :u)))
                 ex.args = if !multioutput
-                    [var_, :( (_vcat)($(indvars...)) ), :($θ), :phi] 
+                    [var_, :((_vcat)($(indvars...))), :($θ), :phi]
                 else
                     [
                         var_,
-                        :( (_vcat)($(indvars...)) ),
+                        :((_vcat)($(indvars...))),
                         Symbol(:($θ), num_depvar),
                         Symbol(:phi, num_depvar),
                     ]
@@ -166,7 +167,8 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
                 end
                 depvar = _args[1]
                 num_depvar = dict_depvars[depvar]
-                indvars = map( (indvar_) -> transform_expression(pinnrep, indvar_), _args[2:end])
+                indvars = map((indvar_) -> transform_expression(pinnrep, indvar_),
+                              _args[2:end])
                 dict_interior_indvars = Dict([indvar .=> j
                                               for (j, indvar) in enumerate(dict_depvar_input[depvar])])
                 dim_l = length(dict_interior_indvars)
@@ -177,13 +179,13 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
                 εs_dnv = [εs[d] for d in undv]
 
                 ex.args = if !multioutput
-                    [var_, :phi, :u, :( (_vcat)($(indvars...)) ), εs_dnv, order, :($θ)]
+                    [var_, :phi, :u, :((_vcat)($(indvars...))), εs_dnv, order, :($θ)]
                 else
                     [
                         var_,
                         Symbol(:phi, num_depvar),
                         :u,
-                        :( (_vcat)($(indvars...)) ),
+                        :((_vcat)($(indvars...))),
                         εs_dnv,
                         order,
                         Symbol(:($θ), num_depvar),
@@ -351,7 +353,8 @@ function pair(eq, depvars, dict_depvars, dict_depvar_input)
     expr = toexpr(eq)
     pair_ = map(depvars) do depvar
         if !isempty(find_thing_in_expr(expr, depvar))
-            dict_depvars[depvar] => filter(arg -> !isempty(find_thing_in_expr(expr, arg)), dict_depvar_input[depvar])
+            dict_depvars[depvar] => filter(arg -> !isempty(find_thing_in_expr(expr, arg)),
+                                           dict_depvar_input[depvar])
         end
     end
     Dict(filter(p -> p !== nothing, pair_))
@@ -466,7 +469,7 @@ function get_argument(eqs, dict_indvars, dict_depvars)
         """Arrays of instances of each dependent variable that appears in the expression, by dependent variable"""
         f_vars = filter(x -> !isempty(x), _vars)
     end
-#    vars = [depvar for expr in vars for depvar in expr ]
+    #    vars = [depvar for expr in vars for depvar in expr ]
     args_ = map(vars) do _vars
         """Arguments of all instances of dependent variable, by instance, by dependent variable"""
         ind_args_ = map.(var -> var.args[2:end], _vars)
@@ -475,8 +478,8 @@ function get_argument(eqs, dict_indvars, dict_depvars)
         all_ind_args = vcat((ind_args_...)...)
 
         # Add any independent variables from expression dependent variable calls
-        for ind_arg in all_ind_args 
-            if ind_arg isa Expr 
+        for ind_arg in all_ind_args
+            if ind_arg isa Expr
                 for ind_var in collect(keys(dict_indvars))
                     if !isempty(NeuralPDE.find_thing_in_expr(ind_arg, ind_var))
                         push!(all_ind_args, ind_var)
@@ -500,5 +503,5 @@ function get_argument(eqs, dict_indvars, dict_depvars)
             end
         end
     end
-    return args_ 
+    return args_
 end

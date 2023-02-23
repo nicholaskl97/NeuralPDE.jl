@@ -26,10 +26,10 @@ function test_ode(strategy_, ic_hard_constraint)
     Dθ = Differential(θ)
 
     # 1D ODE
-    eq = ic_hard_constraint ? 
-                    Dθ(u(θ)) ~ θ^3 + 2 * θ + (θ^2) * ((1 + 3 * (θ^2)) / (1 + θ + (θ^3))) -
-                    (u(θ) - u(0.) + 1.0) * (θ + ((1 + 3 * (θ^2)) / (1 + θ + θ^3))) :
-                    Dθ(u(θ)) ~ θ^3 + 2 * θ + (θ^2) * ((1 + 3 * (θ^2)) / (1 + θ + (θ^3))) -
+    eq = ic_hard_constraint ?
+         Dθ(u(θ)) ~ θ^3 + 2 * θ + (θ^2) * ((1 + 3 * (θ^2)) / (1 + θ + (θ^3))) -
+                    (u(θ) - u(0.0) + 1.0) * (θ + ((1 + 3 * (θ^2)) / (1 + θ + θ^3))) :
+         Dθ(u(θ)) ~ θ^3 + 2 * θ + (θ^2) * ((1 + 3 * (θ^2)) / (1 + θ + (θ^3))) -
                     u(θ) * (θ + ((1 + 3 * (θ^2)) / (1 + θ + θ^3)))
 
     # Initial and boundary conditions
@@ -57,9 +57,10 @@ function test_ode(strategy_, ic_hard_constraint)
     analytic_sol_func(t) = exp(-(t^2) / 2) / (1 + t + t^3) + t^2
     ts = [infimum(d.domain):0.01:supremum(d.domain) for d in domains][1]
     u_real = [analytic_sol_func(t) for t in ts]
-    u_predict = ic_hard_constraint ? 
-                        [first(phi(t, res.minimizer)) - first(phi(0., res.minimizer)) + 1.0 for t in ts] : 
-                        [first(phi(t, res.minimizer)) for t in ts]
+    u_predict = ic_hard_constraint ?
+                [first(phi(t, res.minimizer)) - first(phi(0.0, res.minimizer)) + 1.0
+                 for t in ts] :
+                [first(phi(t, res.minimizer)) for t in ts]
 
     @test u_predict≈u_real atol=0.1
     # using Plots

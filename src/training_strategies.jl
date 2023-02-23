@@ -29,7 +29,7 @@ function merge_strategy_with_loss_function(pinnrep::PINNRepresentation,
 
     # the points in the domain and on the boundary
     pde_train_sets, bcs_train_sets = train_sets
-    
+
     pde_train_sets = adapt.(parameterless_type(ComponentArrays.getdata(flat_init_params)),
                             pde_train_sets)
     bcs_train_sets = adapt.(parameterless_type(ComponentArrays.getdata(flat_init_params)),
@@ -90,18 +90,20 @@ function merge_strategy_with_loss_function(pinnrep::PINNRepresentation,
                         strategy)
     pde_bounds, bcs_bounds = bounds
 
-    pde_loss_functions = [get_loss_function(_loss, bound, eltypeθ, strategy, strategy.points)
+    pde_loss_functions = [get_loss_function(_loss, bound, eltypeθ, strategy,
+                                            strategy.points)
                           for (_loss, bound) in zip(datafree_pde_loss_function, pde_bounds)]
 
-    bc_loss_functions = [get_loss_function(_loss, bound, eltypeθ, strategy, strategy.bcs_points)
+    bc_loss_functions = [get_loss_function(_loss, bound, eltypeθ, strategy,
+                                           strategy.bcs_points)
                          for (_loss, bound) in zip(datafree_bc_loss_function, bcs_bounds)]
 
     pde_loss_functions, bc_loss_functions
 end
 
-function get_loss_function(loss_function, bound, eltypeθ, strategy::StochasticTraining, points = strategy.points;
+function get_loss_function(loss_function, bound, eltypeθ, strategy::StochasticTraining,
+                           points = strategy.points;
                            τ = nothing)
-
     loss = (θ) -> begin
         sets = generate_random_points(points, bound, eltypeθ)
         sets_ = adapt(parameterless_type(ComponentArrays.getdata(θ)), sets)

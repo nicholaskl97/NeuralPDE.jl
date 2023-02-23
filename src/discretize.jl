@@ -61,7 +61,9 @@ function build_symbolic_loss_function(pinnrep::PINNRepresentation, eqs;
         this_eq_pair = pair(eqs, depvars, dict_depvars, dict_depvar_input)
         this_eq_indvars = unique(vcat(values(this_eq_pair)...))
     else
-        this_eq_pair = Dict(map(intvars -> dict_depvars[intvars] => filter(arg -> !isempty(find_thing_in_expr(integrand, arg)), dict_depvar_input[intvars]),
+        this_eq_pair = Dict(map(intvars -> dict_depvars[intvars] => filter(arg -> !isempty(find_thing_in_expr(integrand,
+                                                                                                              arg)),
+                                                                           dict_depvar_input[intvars]),
                                 integrating_depvars))
         this_eq_indvars = transformation_vars isa Nothing ?
                           unique(vcat(values(this_eq_pair)...)) : transformation_vars
@@ -145,7 +147,7 @@ function build_symbolic_loss_function(pinnrep::PINNRepresentation, eqs;
     indvars_ex = [:($:cord[[$i], :]) for (i, x) in enumerate(this_eq_indvars)]
     left_arg_pairs, right_arg_pairs = this_eq_indvars, indvars_ex
     vars_eq = Expr(:(=), build_expr(:tuple, left_arg_pairs),
-                    build_expr(:tuple, right_arg_pairs))
+                   build_expr(:tuple, right_arg_pairs))
 
     if !(dict_transformation_vars isa Nothing)
         transformation_expr_ = Expr[]
@@ -325,15 +327,15 @@ function get_bounds(domains, eqs, bcs, eltypeθ, dict_indvars, dict_depvars, str
             bds = eltypeθ.(bds)
             bds[1, :], bds[2, :]
         else
-            [eltypeθ(0.)], [eltypeθ(0.)]
+            [eltypeθ(0.0)], [eltypeθ(0.0)]
         end
     end
 
     dx_bcs = 1 / strategy.bcs_points
     dict_span_bcs = Dict([Symbol(d.variables) => [
-                          infimum(d.domain) + dx_bcs,
-                          supremum(d.domain) - dx_bcs,
-                      ] for d in domains])
+                              infimum(d.domain) + dx_bcs,
+                              supremum(d.domain) - dx_bcs,
+                          ] for d in domains])
     bound_vars = get_variables(bcs, dict_indvars, dict_depvars)
     bcs_bounds = map(bound_vars) do bound_var
         if !isempty(bound_var)
@@ -341,10 +343,10 @@ function get_bounds(domains, eqs, bcs, eltypeθ, dict_indvars, dict_depvars, str
             bds = eltypeθ.(bds)
             bds[1, :], bds[2, :]
         else
-            [eltypeθ(0.)], [eltypeθ(0.)]
+            [eltypeθ(0.0)], [eltypeθ(0.0)]
         end
     end
-    
+
     return pde_bounds, bcs_bounds
 end
 
