@@ -352,7 +352,7 @@ domains = [x ∈ Interval(0.0, 1.0)]
 chain = [[Lux.Chain(Lux.Dense(1, 12, Lux.tanh), Lux.Dense(12, 12, Lux.tanh),
                     Lux.Dense(12, 1)) for _ in 1:3]
          [Lux.Chain(Lux.Dense(1, 4, Lux.tanh), Lux.Dense(4, 1)) for _ in 1:2]]
-quasirandom_strategy = NeuralPDE.QuasiRandomTraining(130; #points
+quasirandom_strategy = NeuralPDE.QuasiRandomTraining(200; #points
                                                      sampling_alg = LatinHypercubeSample())
 
 discretization = NeuralPDE.PhysicsInformedNN(chain, quasirandom_strategy)
@@ -372,7 +372,7 @@ cb_ = function (p, l)
     return false
 end
 
-res = solve(prob, OptimizationOptimJL.BFGS(); maxiters = 1000)
+res = solve(prob, OptimizationOptimJL.BFGS(); maxiters = 1500)
 phi = discretization.phi[1]
 
 analytic_sol_func(x) = (π * x * (-x + (π^2) * (2 * x - 3) + 1) - sin(π * x)) / (π^3)

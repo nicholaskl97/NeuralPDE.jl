@@ -460,21 +460,21 @@ function get_argument(eqs, _indvars::Array, _depvars::Array)
     get_argument(eqs, dict_indvars, dict_depvars)
 end
 function get_argument(eqs, dict_indvars, dict_depvars)
-    """Equations, as expressions"""
+    "Equations, as expressions"
     exprs = toexpr.(eqs)
-    """Instances of each dependent variable that appears in the expression, by dependent variable, by equation"""
+    "Instances of each dependent variable that appears in the expression, by dependent variable, by equation"
     vars = map(exprs) do expr # For each equation,...
-        """Arrays of instances of each dependent variable, by dependent variable"""
+        "Arrays of instances of each dependent variable, by dependent variable"
         _vars = map(depvar -> find_thing_in_expr(expr, depvar), collect(keys(dict_depvars)))
-        """Arrays of instances of each dependent variable that appears in the expression, by dependent variable"""
+        "Arrays of instances of each dependent variable that appears in the expression, by dependent variable"
         f_vars = filter(x -> !isempty(x), _vars)
     end
     #    vars = [depvar for expr in vars for depvar in expr ]
     args_ = map(vars) do _vars
-        """Arguments of all instances of dependent variable, by instance, by dependent variable"""
+        "Arguments of all instances of dependent variable, by instance, by dependent variable"
         ind_args_ = map.(var -> var.args[2:end], _vars)
         syms = Set{Symbol}()
-        """All arguments in any instance of a dependent variable"""
+        "All arguments in any instance of a dependent variable"
         all_ind_args = vcat((ind_args_...)...)
 
         # Add any independent variables from expression dependent variable calls
