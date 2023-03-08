@@ -19,10 +19,27 @@ julia> _dot_(e)
 dottable_(x) = Broadcast.dottable(x)
 dottable_(x::Function) = true
 
+"""
+    _vcat(x...)
+
+Wraps vcat, but isn't dottable. Also, if x contains a mixture of arrays and
+scalars, it fills the scalars to match the dimensions of the arrays.
+
+# Examples
+```julia-repl
+julia> _vcat([1 2], [3 4])
+2×2 Matrix{Int64}:
+ 1  2
+ 3  4
+
+julia> _vcat(0, [1 2])
+2×2 Matrix{Int64}:
+ 0  0
+ 1  2
+```
+"""
 _vcat(x::Number...) = vcat(x...)
 _vcat(x::AbstractArray{<:Number}...) = vcat(x...)
-# If the arguments are a mix of numbers and matrices/vectors/arrays, 
-# the numbers need to be copied for the dimensions to match
 function _vcat(x::Union{Number, AbstractArray{<:Number}}...)
     example = first(Iterators.filter(e -> !(e isa Number), x))
     dims = (1, size(example)[2:end]...)
@@ -140,15 +157,17 @@ function _transform_expression(pinnrep::PINNRepresentation, ex; is_integral = fa
     _args = ex.args
     for (i, e) in enumerate(_args)
         if !(e isa Expr)
-            if e in keys(dict_depvars)
+            if e in keys(dict_depvars) # _args represents a call to a dependent variable
                 depvar = _args[1]
                 num_depvar = dict_depvars[depvar]
                 indvars = map((indvar_) -> transform_expression(pinnrep, indvar_),
                               _args[2:end])
                 var_ = is_integral ? :(u) : :($(Expr(:$, :u)))
                 ex.args = if !multioutput
+                    # Make something like u(x,y) into u([x,y], θ, phi), since the neural net needs to be called with parameters 
+                    # Note that [x,y] is achieved with _vcat, which can also fill scalars, as in the u(0,x) case, where vcat(0,x) would fail if x were a row vector
                     [var_, :((_vcat)($(indvars...))), :($θ), :phi]
-                else
+                else # If multioutput, there are different θ and phir for each dependent variable
                     [
                         var_,
                         :((_vcat)($(indvars...))),
