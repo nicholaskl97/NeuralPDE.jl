@@ -1,4 +1,4 @@
-using Lux, OptimizationOptimisers
+using Lux, ComponentArrays, OptimizationOptimisers
 using Test, NeuralPDE
 using Optimization
 using CUDA, QuasiMonteCarlo
