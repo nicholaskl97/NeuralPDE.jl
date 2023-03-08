@@ -460,24 +460,25 @@ function get_argument(eqs, _indvars::Array, _depvars::Array)
     get_argument(eqs, dict_indvars, dict_depvars)
 end
 function get_argument(eqs, dict_indvars, dict_depvars)
-    "Equations, as expressions"
-    exprs = toexpr.(eqs)
-    "Instances of each dependent variable that appears in the expression, by dependent variable, by equation"
+    exprs = toexpr.(eqs) # Equations, as expressions
+    # vars is an array of arrays of arrays, representing instances of each dependent variable that appears in the expression, by dependent variable, by equation
     vars = map(exprs) do expr # For each equation,...
-        "Arrays of instances of each dependent variable, by dependent variable"
+        # For each dependent variable, make an array of instances of the dependent variable
         _vars = map(depvar -> find_thing_in_expr(expr, depvar), collect(keys(dict_depvars)))
-        "Arrays of instances of each dependent variable that appears in the expression, by dependent variable"
+        # Remove any empty arrays, representing dependent variables that don't appear in the equation
         f_vars = filter(x -> !isempty(x), _vars)
     end
-    #    vars = [depvar for expr in vars for depvar in expr ]
-    args_ = map(vars) do _vars
-        "Arguments of all instances of dependent variable, by instance, by dependent variable"
-        ind_args_ = map.(var -> var.args[2:end], _vars)
-        syms = Set{Symbol}()
-        "All arguments in any instance of a dependent variable"
-        all_ind_args = vcat((ind_args_...)...)
 
-        # Add any independent variables from expression dependent variable calls
+    args_ = map(vars) do _vars # For each equation, ... 
+        # _vars is an array of arrays of instances of each dependent variables that appears in the equation, by dependent variable
+
+        # For each dependent variable, for each instance of the dependent variable, get all arguments of that instance
+        ind_args_ = map.(var -> var.args[2:end], _vars)
+
+        # Get all arguments used in any instance of any dependent variable
+        all_ind_args = reduce(vcat, reduce(vcat, ind_args_))
+
+        # Add any independent variables from expression-typed dependent variable calls
         for ind_arg in all_ind_args
             if ind_arg isa Expr
                 for ind_var in collect(keys(dict_indvars))
@@ -488,6 +489,7 @@ function get_argument(eqs, dict_indvars, dict_depvars)
             end
         end
 
+        syms = Set{Symbol}()
         filter(all_ind_args) do ind_arg # For each argument
             if ind_arg isa Symbol
                 if ind_arg ∈ syms
