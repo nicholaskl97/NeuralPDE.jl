@@ -10,35 +10,81 @@ Take expressions in the form:
 
 to
 
-:((cord, θ, phi, derivative, u)->begin
-          #= ... =#
-          #= ... =#
-          begin
-              (θ1, θ2) = (θ[1:33], θ"[34:66])
-              (phi1, phi2) = (phi[1], phi[2])
-              let (x, y) = (cord[1], cord[2])
-                  [(+)(derivative(phi1, u, [x, y], [[ε, 0.0]], 1, θ1), (*)(4, derivative(phi2, u, [x, y], [[0.0, ε]], 1, θ2))) - 0,
-                   (+)(derivative(phi2, u, [x, y], [[ε, 0.0]], 1, θ2), (*)(9, derivative(phi1, u, [x, y], [[0.0, ε]], 1, θ1))) - 0]
-              end
-          end
-      end)
+:((cord, θ, phi, derivative, integral, u, p)->begin
+        #= ... =#
+        #= ... =#
+        begin
+            (θ1, θ2) = (θ[1:205], θ[206:410])
+            (phi1, phi2) = (phi[1], phi[2])
+            let (x, y) = (cord[[1], :], cord[[2], :])
+                begin
+                    cord2 = vcat(x, y)
+                    cord1 = vcat(x, y)
+                end
+                (+).((*).(4, derivative(phi2, u, _vcat(x, y), [[0.0, ε]], 1, θ2)), derivative(phi1, u, _vcat(x, y), [[ε, 0.0]], 1, θ1)) .- 0
+            end
+        end
+    end)
 
-for Flux.Chain, and
+for Dx(u1(x,y)) + 4*Dy(u2(x,y)) ~ 0, and
 
-:((cord, θ, phi, derivative, u)->begin
-          #= ... =#
-          #= ... =#
-          begin
-              (u1, u2) = (θ.depvar.u1, θ.depvar.u2)
-              (phi1, phi2) = (phi[1], phi[2])
-              let (x, y) = (cord[1], cord[2])
-                  [(+)(derivative(phi1, u, [x, y], [[ε, 0.0]], 1, u1), (*)(4, derivative(phi2, u, [x, y], [[0.0, ε]], 1, u1))) - 0,
-                   (+)(derivative(phi2, u, [x, y], [[ε, 0.0]], 1, u2), (*)(9, derivative(phi1, u, [x, y], [[0.0, ε]], 1, u2))) - 0]
-              end
-          end
-      end)
+:((cord, θ, phi, derivative, integral, u, p)->begin
+        #= ... =#
+        #= ... =#
+        begin
+            (θ1, θ2) = (θ[1:205], θ[206:410])
+            (phi1, phi2) = (phi[1], phi[2])
+            let (x, y) = (cord[[1], :], cord[[2], :])
+                begin
+                    cord2 = vcat(x, y)
+                    cord1 = vcat(x, y)
+                end
+                (+).((*).(9, derivative(phi1, u, _vcat(x, y), [[0.0, ε]], 1, θ1)), derivative(phi2, u, _vcat(x, y), [[ε, 0.0]], 1, θ2)) .- 0
+            end
+        end
+    end)
 
-for Lux.AbstractExplicitLayer
+for Dx(u2(x,y)) + 9*Dy(u1(x,y)) ~ 0 (i.e., separate loss functions are created for each equation)
+
+with Flux.Chain; and
+
+:((cord, θ, phi, derivative, integral, u, p)->begin
+        #= ... =#
+        #= ... =#
+        begin
+            (θ1, θ2) = (θ.depvar.u1, θ.depvar.u2)
+            (phi1, phi2) = (phi[1], phi[2])
+            let (x, y) = (cord[[1], :], cord[[2], :])
+                begin
+                    cord2 = vcat(x, y)
+                    cord1 = vcat(x, y)
+                end
+                (+).((*).(4, derivative(phi2, u, _vcat(x, y), [[0.0, ε]], 1, θ2)), derivative(phi1, u, _vcat(x, y), [[ε, 0.0]], 1, θ1)) .- 0
+            end
+        end
+    end)
+
+for Dx(u1(x,y)) + 4*Dy(u2(x,y)) ~ 0 and
+
+:((cord, θ, phi, derivative, integral, u, p)->begin
+        #= ... =#
+        #= ... =#
+        begin
+            (θ1, θ2) = (θ.depvar.u1, θ.depvar.u2)
+            (phi1, phi2) = (phi[1], phi[2])
+            let (x, y) = (cord[[1], :], cord[[2], :])
+                begin
+                    cord2 = vcat(x, y)
+                    cord1 = vcat(x, y)
+                end
+                (+).((*).(9, derivative(phi1, u, _vcat(x, y), [[0.0, ε]], 1, θ1)), derivative(phi2, u, _vcat(x, y), [[ε, 0.0]], 1, θ2)) .- 0
+            end
+        end
+    end)
+
+for Dx(u2(x,y)) + 9*Dy(u1(x,y)) ~ 0
+
+with Lux.Chain
 """
 function build_symbolic_loss_function(pinnrep::PINNRepresentation, eqs;
                                       eq_params = SciMLBase.NullParameters(),
