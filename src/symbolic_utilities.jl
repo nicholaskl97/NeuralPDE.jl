@@ -495,7 +495,7 @@ function get_argument(eqs, dict_indvars, dict_depvars)
         ind_args_ = map.(var -> var.args[2:end], _vars)
 
         # Get all arguments used in any instance of any dependent variable
-        all_ind_args = reduce(vcat, reduce(vcat, ind_args_))
+        all_ind_args = reduce(vcat, reduce(vcat, ind_args_,init=Any[]),init=Any[])
 
         # Add any independent variables from expression-typed dependent variable calls
         for ind_arg in all_ind_args
