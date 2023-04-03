@@ -24,7 +24,7 @@ import ModelingToolkit: value, nameof, toexpr, build_expr, expand_derivatives
 import DomainSets: Domain, ClosedInterval
 import ModelingToolkit: Interval, infimum, supremum #,Ball
 import SciMLBase: @add_kwonly, parameterless_type
-using Flux: @nograd
+using Zygote: @nograd
 import Optimisers
 import UnPack: @unpack
 import RecursiveArrayTools
