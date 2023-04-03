@@ -73,7 +73,7 @@ function StochasticTraining(points; bcs_points = points)
     StochasticTraining(points, bcs_points)
 end
 
-@nograd function generate_random_points(points, bound, eltypeθ)
+function generate_random_points(points, bound, eltypeθ)
     lb, ub = bound
     rand(eltypeθ, length(lb), points) .* (ub .- lb) .+ lb
 end
@@ -153,8 +153,8 @@ function QuasiRandomTraining(points; bcs_points = points,
     QuasiRandomTraining(points, bcs_points, sampling_alg, resampling, minibatch)
 end
 
-@nograd function generate_quasi_random_points_batch(points, bound, eltypeθ, sampling_alg,
-                                                    minibatch)
+function generate_quasi_random_points_batch(points, bound, eltypeθ, sampling_alg,
+                                            minibatch)
     lb, ub = bound
     set = QuasiMonteCarlo.generate_design_matrices(points, lb, ub, sampling_alg, minibatch)
     set = map(s -> adapt(parameterless_type(eltypeθ), s), set)
